@@ -1,0 +1,118 @@
+net.minecraft.world.item.ItemStack 是 Minecraft 1.20.1 中表示物品堆栈的类，用于管理一组物品（如物品类型、数量、耐久、附魔、NBT 数据等）。它是游戏内所有物品操作的基础，例如玩家背包中的物品、方块掉落物、工具使用等场景均依赖此类。
+
+核心作用
+物品属性管理
+
+存储物品类型（Item）、数量（count）、耐久（damage）、附魔、自定义 NBT 数据等。
+
+交互行为
+
+定义物品的使用逻辑（如右键点击、攻击、工具挖掘等）。
+
+序列化与持久化
+
+将物品数据保存到或从 NBT（CompoundTag）中加载。
+
+扩展支持
+
+通过 CapabilityProvider 支持 Forge 的能力（Capability）系统，允许 Mod 添加自定义功能。
+
+重要方法
+1. 构造与基本属性
+ItemStack(Item item, int count)
+构造指定物品类型和数量的物品堆栈。
+
+java
+ItemStack diamondStack = new ItemStack(Items.DIAMOND, 5); // 5个钻石
+getItem()
+获取物品堆栈的类型（Item 对象）。
+
+java
+Item item = stack.getItem(); // 例如返回 Items.DIAMOND
+getCount() / setCount(int count)
+获取或设置物品数量（范围 1-64/堆叠上限）。
+
+java
+int count = stack.getCount(); // 当前数量
+stack.setCount(3); // 设置为3个
+2. 耐久与元数据
+getDamageValue() / setDamageValue(int damage)
+获取或设置物品的耐久值（如工具的剩余耐久）。
+
+java
+int damage = stack.getDamageValue();
+stack.setDamageValue(10); // 设置耐久为10
+isDamaged()
+检查物品是否已损坏（耐久值大于 0）。
+
+java
+if (stack.isDamaged()) { /* 处理损坏逻辑 */ }
+3. 附魔与NBT数据
+getEnchantmentTags()
+获取附魔标签（ListTag），包含所有附魔信息。
+
+java
+ListTag enchantments = stack.getEnchantmentTags();
+getTag() / setTag(CompoundTag tag)
+获取或设置自定义 NBT 数据（如 Mod 的额外存储）。
+
+java
+CompoundTag nbt = stack.getTag();
+nbt.putString("custom_data", "value");
+stack.setTag(nbt);
+getOrCreateTag()
+若物品无 NBT 数据，则创建并返回一个空 CompoundTag。
+
+java
+CompoundTag tag = stack.getOrCreateTag();
+4. 物品交互与行为
+use(Level level, Player player, InteractionHand hand)
+触发物品的使用逻辑（如吃食物、放置方块）。
+
+java
+InteractionResult result = stack.use(level, player, hand);
+hurt(int amount, RandomSource random, @Nullable LivingEntity entity)
+减少物品耐久值（如工具使用后损耗）。
+
+java
+stack.hurt(1, random, player); // 损耗1点耐久
+copy()
+创建物品堆栈的深拷贝副本。
+
+java
+ItemStack copiedStack = stack.copy();
+5. 功能性检查
+isEmpty()
+检查物品堆栈是否为空（数量为 0）。
+
+java
+if (stack.isEmpty()) { /* 处理空堆栈 */ }
+is(Item item)
+检查物品类型是否匹配。
+
+java
+boolean isDiamond = stack.is(Items.DIAMOND);
+isEnchanted()
+检查物品是否被附魔。
+
+java
+if (stack.isEnchanted()) { /* 处理附魔物品 */ }
+典型应用场景
+物品操作
+修改物品数量、耐久、NBT 数据，或检查物品类型。
+
+自定义物品逻辑
+通过重写 Item 类的 use 方法，定义物品的右键行为。
+
+Mod 数据存储
+使用 NBT 或 Capability 存储 Mod 的额外数据（如能量值、状态标记）。
+
+注意事项（1.20.1 版本）
+不可变性
+ItemStack 的部分方法（如 setCount）会返回新实例，而非修改原对象。
+
+堆叠限制
+物品的堆叠上限由 Item 的 getMaxStackSize() 决定（如工具通常为 1，方块为 64）。
+
+NBT 安全
+操作 NBT 数据时需检查 tag != null，避免空指针异常。

@@ -1,0 +1,16 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "mcvan:block/video_screen_1609"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "up": {"texture": "#all", "uv": [0,0,16,16], "tintindex": 0}
+      },
+      "shade": false
+    }
+  ]
+}

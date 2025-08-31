@@ -1,0 +1,21 @@
+要更改的地方如下：
+1.build.gradle
+2.gradle.properties
+3.IndexMod.java
+
+更改完后需要同步build
+
+记录版本变更内容：
+
+1.0 -> 1.1
+
+1.增加了VideoScreenBlock和VideoScreenBlock1609
+
+2.增加了BigArrow、Boss、BigBow
+
+3.增加了Instruct、ToolVan、StoreVan
+
+1.1 -> 1.2
+
+计划1.增加壁纸系统
+计划2.增加壁纸

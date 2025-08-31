@@ -1,0 +1,36 @@
+{
+  "item.mcvan.big_arrow": "极致箭",
+  "item.mcvan.big_bow": "极致弓",
+  "item.mcvan.video_screen": "视频屏幕方块",
+  "item.mcvan.video_screen_1609": "视频屏幕方块1609",
+
+
+  "itemGroup.mcvan.mcvan_tab": "伊宛的道具箱",
+
+
+  "entity.mcvan.dummy_player": "假人",
+  "entity.mcvan.boss": "大boss",
+
+
+  "block.mcvan.video_control_menu": "视频方块菜单",
+  "block.mcvan.video_screen": "视频屏幕方块",
+  "block.mcvan.video_screen_1609": "视频屏幕方块1609",
+
+
+  "gui.mcvan.video_control.set_url": "设置链接",
+  "gui.mcvan.video_control.url_prompt": "视频链接",
+  "gui.mcvan.video_control.load_video": "加载视频",
+  "gui.mcvan.video_control.check_video_exists": "检查视频是否入库",
+  "gui.mcvan.video_control.save_last_frame": "保存最后一帧图片",
+  "gui.mcvan.video_control.save_random_frame": "保存随机一帧图片",
+  "gui.mcvan.video_control.play_video": "播放",
+  "gui.mcvan.video_control.pause_video": "暂停",
+  "gui.mcvan.video_control.current_frame_index": "当前帧",
+  "gui.mcvan.video_control.get_frame_count_server": "获取帧总数服务",
+  "gui.mcvan.video_control.get_frame_count_local": "获取帧总数本地",
+  "gui.mcvan.video_control.frame_count_local": "视频总帧数本地",
+  "gui.mcvan.video_control.render_frame_next": "渲染下一帧",
+  "gui.mcvan.video_control.render_frame_back": "渲染上一帧",
+  "gui.mcvan.video_control.render_frame_restart": "重头播放",
+  "gui.mcvan.video_control.current_url": "当前链接"
+}

@@ -1,0 +1,36 @@
+{
+  "item.mcvan.big_arrow": "Big arrow",
+  "item.mcvan.big_bow": "Big bow",
+  "item.mcvan.video_screen": "Video screen block",
+  "item.mcvan.video_screen_1609": "Video screen block 1609",
+
+
+  "itemGroup.mcvan.mcvan_tab": "Ee_Van Props used in acting",
+
+
+  "entity.mcvan.dummy_player": "Dummy Player",
+  "entity.mcvan.boss": "Boss",
+
+
+  "block.mcvan.video_control_menu": "TV block menu",
+  "block.mcvan.video_screen": "Video screen block",
+  "block.mcvan.video_screen_1609": "Video screen block 1609",
+
+
+  "gui.mcvan.video_control.set_url": "Set URL",
+  "gui.mcvan.video_control.url_prompt": "Video URL",
+  "gui.mcvan.video_control.load_video": "Load video",
+  "gui.mcvan.video_control.check_video_exists": "Check video exists",
+  "gui.mcvan.video_control.save_last_frame": "Save last frame",
+  "gui.mcvan.video_control.save_random_frame": "Save random frame",
+  "gui.mcvan.video_control.play_video": "Play",
+  "gui.mcvan.video_control.pause_video": "Pause",
+  "gui.mcvan.video_control.current_frame_index": "Current frame index",
+  "gui.mcvan.video_control.get_frame_count_server": "Get frame count(server)",
+  "gui.mcvan.video_control.get_frame_count_local": "Get frame count(local)",
+  "gui.mcvan.video_control.frame_count_local": "Frame count local",
+  "gui.mcvan.video_control.render_frame_next": "Render frame next",
+  "gui.mcvan.video_control.render_frame_back": "Render frame back",
+  "gui.mcvan.video_control.render_frame_restart": "Render frame restart",
+  "gui.mcvan.video_control.current_url": "Current url"
+}

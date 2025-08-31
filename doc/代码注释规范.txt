@@ -1,0 +1,47 @@
+【本规范用于优化代码，减少不必要的空格与行数】
+【缩进使用4个空格，不要使用tab键，因此所有的代码的开头位置均为4的倍数+1】
+1.短注释直接写在行末尾，副语言请使用||作为分隔符号
+例如：
+Entity target = result.getEntity();// 受击目标
+Entity owner = this.getOwner();// 玩家||game player
+
+
+2.长文本注释使用注释块进行注释，副语言同样在主语言后面并使用||分隔开
+例如：
+/**
+ 创建genericKill伤害源||Create genericKill damage source
+**/
+或者
+/**
+ * 物品相关
+ */
+DamageSource genericKillSource;// 创建genericKill伤害源
+
+
+3.过于抽象的或者难以理解的常量或者变量需要注释用途
+
+
+4.所有的函数均需要注释长文本并结构化：
+例如：
+/**
+ * describe: 箭矢击中实体时触发的事件||The event triggered when an arrow hits a solid object
+ * param: result: EntityHitResult 实体击中结果||Entity hit result
+ * return: void
+ */
+@Override
+protected void onHitEntity(EntityHitResult result) {
+	
+}
+
+5.所有类前面需要加上长文本注释并结构化：
+例如：
+/**CLASS
+ describe: 自定义箭矢实体类||Custom arrow entity class
+ notepad: 箭矢实体类继承自 AbstractArrow，并重写了 onHitEntity() 方法，用于处理箭矢击中实体时的事件。
+**/
+public class BigArrowEntity extends AbstractArrow {
+}
+
+6.禁止单独使用一行进行短注释，类似于这样：
+// 击中次数
+int count = 0;

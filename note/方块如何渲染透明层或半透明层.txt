@@ -1,0 +1,42 @@
+
+1.确保有resources/assets/mcvan/blockstates/block_name.json，它用于指向方块的模型文件
+
+{
+  "variants": {
+    "": {
+      "model": "mcvan:block/block_name"
+    }
+  }
+}
+
+2.确保有resources/assets/mcvan/models/block/block_name.json，它是方块的模型文件
+
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "mcvan:block/block_name"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "up": {"texture": "#all", "uv": [0,0,16,16], "tintindex": 0}
+      },
+      "shade": false
+    }
+  ]
+}
+
+3.确保resources/assets/mcvan/textures/block/block_name.png 材质贴图 带有 Alpha 通道
+
+
+4.在FMLClientSetupEvent事件中定义方块的渲染类型为透明或半透明
+
+   @SubscribeEvent
+   public static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            RenderTypeLookup.setRenderLayer(ModBlocks.VIDEO_SCREEN_BLOCK.get(), RenderType.translucent());//半透明
+            RenderTypeLookup.setRenderLayer(ModBlocks.VIDEO_SCREEN_BLOCK_1609.get(), RenderType.cutout());//全透明
+        });
+   }

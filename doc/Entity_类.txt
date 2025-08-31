@@ -1,0 +1,105 @@
+net.minecraft.world.entity.Entity
+是 Minecraft 1.20.1 中所有实体的基类，
+代表游戏中的动态对象，如生物（LivingEntity）、玩家（Player）、掉落物（ItemEntity）、弹射物（Projectile）等。
+它提供了实体的通用行为和数据管理，并支持多种功能扩展。
+核心作用
+基础属性管理
+
+存储实体的位置、速度、旋转角度、碰撞箱、UUID 等基础属性。
+
+生命周期控制
+
+管理实体的生成、更新（每帧逻辑）、销毁等生命周期事件。
+
+交互与事件
+
+处理实体与其他实体、方块、世界的交互（如移动、碰撞、伤害、命令执行等）。
+
+数据持久化
+
+将实体数据保存到 NBT（CompoundTag）或从 NBT 加载。
+
+扩展支持
+
+通过 CapabilityProvider 支持 Forge 的能力（Capability）系统，允许 Mod 添加自定义功能。
+
+重要方法
+1. 生命周期与更新
+tick()
+每游戏刻（20 次/秒）调用一次，处理实体的逻辑更新（如移动、AI 行为）。
+
+java
+public void tick() { /* 实现更新逻辑 */ }
+remove(RemovalReason reason)
+销毁实体，并指定销毁原因（如被杀死、卸载等）。
+
+java
+public void remove(RemovalReason reason) { /* 移除实体 */ }
+2. 位置与运动
+move(MoverType type, Vec3 movement)
+控制实体的移动，处理碰撞检测和物理逻辑。
+
+java
+public void move(MoverType type, Vec3 movement) { /* 移动逻辑 */ }
+setPos(double x, double y, double z)
+直接设置实体的坐标，不触发物理检测。
+
+java
+public void setPos(double x, double y, double z) { /* 设置位置 */ }
+3. 伤害与交互
+hurt(DamageSource source, float amount)
+当实体受到伤害时触发，返回 boolean 表示是否成功造成伤害。
+
+java
+public boolean hurt(DamageSource source, float amount) { /* 伤害处理 */ }
+kill()
+直接杀死实体（调用 hurt() 的快捷方式）。
+
+java
+public void kill() { /* 销毁实体 */ }
+4. 数据持久化
+addAdditionalSaveData(CompoundTag tag)
+将实体的自定义数据保存到 NBT 标签。
+
+java
+public void addAdditionalSaveData(CompoundTag tag) { /* 保存数据 */ }
+readAdditionalSaveData(CompoundTag tag)
+从 NBT 标签加载实体的自定义数据。
+
+java
+public void readAdditionalSaveData(CompoundTag tag) { /* 加载数据 */ }
+5. 其他关键方法
+getBoundingBox()
+获取实体的碰撞箱（AABB），用于检测碰撞。
+
+java
+public AABB getBoundingBox() { /* 返回碰撞箱 */ }
+isAlive()
+检查实体是否存活（未被销毁）。
+
+java
+public boolean isAlive() { /* 返回存活状态 */ }
+hasPermission(int level)
+实现自 CommandSource，检查实体是否有执行命令的权限。
+
+java
+public boolean hasPermission(int level) { /* 权限检查 */ }
+典型应用场景
+自定义实体
+继承 Entity 或其子类（如 LivingEntity），重写 tick()、hurt() 等方法实现自定义行为。
+
+修改实体交互
+通过监听事件（如 EntityEvent）或重写方法，改变实体的移动、伤害逻辑。
+
+数据存储
+使用 addAdditionalSaveData 和 readAdditionalSaveData 保存 Mod 的额外数据。
+
+注意事项（1.20.1 版本）
+子类化
+大多数情况下，应继承 LivingEntity（生物）或 Entity 的直接子类（如 ItemEntity），而非直接继承 Entity。
+
+事件驱动
+Forge 提供了 EntityEvent 系列事件（如 EntityJoinLevelEvent），优先使用事件系统而非直接修改基类。
+
+性能敏感
+tick() 方法频繁调用，需避免复杂计算，防止性能下降。

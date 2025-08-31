@@ -1,0 +1,240 @@
+1.初衷
+minecraft原版的画太单调，并且每次都是随机的，想要一个可以自定义画的内容以及可以动态循环播放视频的壁画mod(基于forge47.4.0,游戏版本1.20.1)。
+
+2.需求列表
+a.支持自定义长宽比例，最小1x1，最大16x16。
+b.支持播放静态壁纸和动态壁纸(短时长的视频)。
+c.可以和原版的画一样右键放在任何墙面上。
+d.可以按住Shift + 右键打开该壁画的设置界面。
+e.设置界面可以修改壁画的来源(url)、以及壁画的尺寸。
+
+3.难点
+a.如果要显示动态壁纸，那么需要调用外部ffmpeg来解析视频并转换为图像，然而ffmpeg解析后的所有帧图像合计内存会非常大，比较占用内存。
+b.要支持动态尺寸，那么动态材质就需要按照最大的尺寸预先创建(16x16)，并且每个壁画要对应一个动态材质，这样也会导致内存占用较大。
+
+https://chat.deepseek.com/a/chat/s/60ca5bfe-83ce-4ed3-b2f7-ecb2c8d4e8b6
+
+Minecraft自定义壁画Mod实现方案
+核心设计思路
+分层纹理系统：使用动态纹理分页技术解决内存问题
+
+智能视频流处理：采用帧缓冲池替代全帧加载
+
+自适应纹理分配：按需创建纹理而非最大尺寸
+
+客户端-服务端协同：确保自定义内容同步
+
+详细实现方案
+1. 核心架构
+classDiagram
+    class CustomPaintingEntity {
+        -paintingSize: Vector2i
+        -contentType: Enum (STATIC, DYNAMIC)
+        -textureData: TextureData
+        -sourceURL: String
+        +onInteract(Player)
+        +updateTexture()
+    }
+
+    class TextureManager {
+        -texturePool: Map<UUID, TextureBuffer>
+        +registerTexture(UUID)
+        +updateTexture(UUID, BufferedImage)
+        +getTexture(UUID)
+    }
+
+    class VideoDecoder {
+        -frameBufferPool: List<BufferedImage>
+        -currentFrameIndex: int
+        +loadVideo(String url)
+        +getNextFrame() BufferedImage
+        +releaseFrames()
+    }
+
+    class PaintingConfigGUI {
+        -targetEntity: CustomPaintingEntity
+        +initGui()
+        +drawScreen()
+        +handleInput()
+    }
+
+    CustomPaintingEntity -- TextureManager: 使用
+    CustomPaintingEntity -- VideoDecoder: 使用
+    PaintingConfigGUI --> CustomPaintingEntity: 配置
+
+
+    2. 关键技术实现
+    a. 动态纹理管理 (解决内存问题)
+
+    public class DynamicTextureSystem {
+        private static final int MAX_CACHE_SIZE = 32; // 最大缓存纹理数
+        private static final Map<UUID, TextureBuffer> TEXTURE_CACHE = new LinkedHashMap<>(MAX_CACHE_SIZE, 0.75f, true) {
+            protected boolean removeEldestEntry(Map.Entry eldest) {
+                return size() > MAX_CACHE_SIZE; // LRU缓存淘汰
+            }
+        };
+
+        public static void updateTexture(UUID id, BufferedImage image) {
+            if (!TEXTURE_CACHE.containsKey(id)) {
+                if (TEXTURE_CACHE.size() >= MAX_CACHE_SIZE) {
+                    // 触发LRU淘汰
+                }
+                TEXTURE_CACHE.put(id, new TextureBuffer(image));
+            } else {
+                TEXTURE_CACHE.get(id).update(image);
+            }
+        }
+
+        public static void bindTexture(UUID id) {
+            if (TEXTURE_CACHE.containsKey(id)) {
+                TEXTURE_CACHE.get(id).bind();
+            }
+        }
+    }
+
+    b. 视频流处理 (FFmpeg集成)
+
+    public class VideoStreamProcessor {
+        private Process ffmpegProcess;
+        private InputStream videoStream;
+        private ExecutorService frameExecutor = Executors.newSingleThreadExecutor();
+        private BlockingQueue<BufferedImage> frameQueue = new ArrayBlockingQueue<>(5); // 5帧缓冲
+
+        public void startStreaming(String url) {
+            frameExecutor.submit(() -> {
+                String[] cmd = {
+                    "ffmpeg", "-i", url,
+                    "-vf", "fps=30,scale=256:256", // 限制分辨率
+                    "-f", "image2pipe",
+                    "-vcodec", "bmp", "-"
+                };
+
+                ffmpegProcess = Runtime.getRuntime().exec(cmd);
+                videoStream = ffmpegProcess.getInputStream();
+
+                while (active) {
+                    BufferedImage frame = readFrame(videoStream);
+                    if (frame != null) {
+                        // 队列满时丢弃最旧帧
+                        if (frameQueue.remainingCapacity() == 0) {
+                            frameQueue.poll();
+                        }
+                        frameQueue.offer(frame);
+                    }
+                }
+            });
+        }
+
+        public BufferedImage getCurrentFrame() {
+            return frameQueue.peek(); // 非阻塞获取
+        }
+    }
+
+    c. 自适应纹理系统
+
+    public class SmartTextureAllocator {
+        public static int createTexture(int width, int height) {
+            int texId = GlStateManager.generateTexture();
+            GlStateManager.bindTexture(texId);
+            GlStateManager.texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            GlStateManager.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+                                     getAdjustedSize(width), // 对齐到2的幂次
+                                     getAdjustedSize(height),
+                                     0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+            return texId;
+        }
+
+        private static int getAdjustedSize(int size) {
+            // 计算最接近的2的幂次 (1,2,4,8,16)
+            return MathHelper.smallestEncompassingPowerOfTwo(size);
+        }
+    }
+
+    3. 主要功能实现
+    a. 壁画实体
+    public class EntityCustomPainting extends EntityHanging {
+        private PaintingData paintingData;
+
+        public boolean interactAt(Player player, Vector3d vec, Hand hand) {
+            if (player.isSneaking()) {
+                // 打开配置GUI
+                player.openGui(new PaintingConfigGUI(this));
+                return true;
+            }
+            return super.interactAt(player, vec, hand);
+        }
+
+        @Override
+        public void tick() {
+            super.tick();
+            if (paintingData.isDynamic()) {
+                paintingData.updateFrame();
+            }
+        }
+    }
+    b. 配置GUI
+    public class PaintingConfigGUI extends Screen {
+        private final EntityCustomPainting painting;
+        private TextFieldWidget urlField;
+        private SizeSelectorWidget sizeSelector;
+
+        protected void init() {
+            urlField = new TextFieldWidget(font, width/2-100, height/2-20, 200, 20, "Image URL");
+            urlField.setText(painting.getUrl());
+
+            sizeSelector = new SizeSelectorWidget(width/2-50, height/2+10,
+                painting.getWidth(), painting.getHeight());
+        }
+
+        public void onClose() {
+            // 保存配置到服务端
+            NetworkHandler.sendToServer(new UpdatePaintingPacket(
+                painting.getId(),
+                urlField.getText(),
+                sizeSelector.getSelectedSize()
+            ));
+        }
+    }
+
+    4. 性能优化策略
+    纹理压缩
+
+    GL30.glTexStorage2D(GL_TEXTURE_2D,
+                      8, // mipmap级别
+                      GL_COMPRESSED_RGBA,
+                      width, height);
+
+帧缓冲共享：
+
+相同视频源的壁画共享帧缓冲池
+
+使用UUID标识视频源
+
+public void onChunkUnload() {
+    if (!isDynamic() || playersInRange < 1) {
+       releaseVideoResources();
+    }
+}
+
+分辨率分级：
+
+private int getOptimalResolution(int blocks) {
+    return switch (blocks) {
+        case 1,2 -> 128;
+        case 3,4 -> 256;
+        case 5,6,7,8 -> 512;
+        default -> 1024; // 最大1024px
+    };
+}
+
+5. 网络同步方案
+
+sequenceDiagram
+    Client->>Server: UpdatePaintingPacket (URL, size)
+    Server->>Client: ConfirmUpdatePacket (UUID)
+    Client->>VideoDecoder: 加载新资源
+    Client->>TextureSystem: 更新纹理
+    loop 视频流
+        VideoDecoder-->>TextureSystem: 推送新帧
+        TextureSystem-->>All Clients: 同步纹理更新
+    end

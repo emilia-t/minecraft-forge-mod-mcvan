@@ -1,0 +1,6 @@
+{
+  "parent": "mcvan:item/big_bow",
+  "textures": {
+    "layer0": "mcvan:item/big_bow_pulling_0"
+  }
+}

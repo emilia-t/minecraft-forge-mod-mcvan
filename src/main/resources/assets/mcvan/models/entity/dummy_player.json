@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "mcvan:textures/entity/dummy_player.png"
+  }
+}

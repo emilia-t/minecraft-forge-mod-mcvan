@@ -1,0 +1,8 @@
+构建和测试您的模组
+gradlew build
+
+测试：
+gradlew runClient
+
+游戏内创造实体
+/summon <实体ID> <位置>
